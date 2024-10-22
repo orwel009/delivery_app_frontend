@@ -26,7 +26,7 @@ const HostLogin = () => {
   const handleSubmit = async () => {
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_SERVER_URL}/auth/login`,
+        `http://localhost:4000/auth/login`,
         formData,
         {
           withCredentials: true,
@@ -34,9 +34,8 @@ const HostLogin = () => {
       );
 
       if (response.status === 200) {
-        // Navigate to homepage if not
-        const user = response.data.host;
-        sessionStorage.setItem("userInfo", JSON.stringify(user));
+        const { host } = response.data;
+        sessionStorage.setItem('userInfo', JSON.stringify({ id: host.id, name: host.name, email: host.email }));
         navigate("/home");
       }
     } catch (e) {

@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import './HostHomePage.css'; // External CSS for styling
+import axios from "axios";
 
 const HostHomePage = () => {
     const navigate = useNavigate();
@@ -17,22 +18,50 @@ const HostHomePage = () => {
 
     useEffect(() => {
         const userInfo = sessionStorage.getItem('userInfo');
-        if (!userInfo) navigate('/login');
+        if (!userInfo)navigate('/login');
     }, []);
+    
 
-    const handleSubmit = (e) => {
+    
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // You can add submission logic here
-        console.log({ pickup, dropoff, size, vehicle, handleWithCare });
-    }
+        const parsedUserInfo = JSON.parse(sessionStorage.getItem('userInfo'));
+        const hostId = parsedUserInfo.id;
+        const formData = {
+            pickup,
+            dropoff,
+            size,
+            vehicle,
+            handleWithCare,
+            hostId,
+        };
+
+        try {
+            const response = await axios.post(
+                `http://localhost:4000/order/add-order`,
+                formData,
+                { withCredentials: true }
+            );
+            if (response.status === 200) {
+                const { host } = response.data;
+                sessionStorage.setItem('userInfo', JSON.stringify(host));
+                navigate("/my-orders");
+            }
+        } catch (e) {
+            alert(e);
+            console.warn(e);
+        }
+    };
+
 
     return (
         <div className="host-homepage">
             <div className="sidebar">
                 <ul>
-                    <li><button onClick={() => navigate('/dp-registration')}>DP Registration</button></li> {/* Navigate to DPRegistration */}
-                    <li><button onClick={() => navigate('#orders-posted')}>Orders Posted</button></li>
-                    <li><button onClick={() => navigate('#orders-completed')}>Orders Completed</button></li>
+                    <li><button onClick={() => navigate('/dp-registration')}>DP Registration</button></li>
+                    <li><button onClick={() => navigate('/orders-posted')}>My Orders</button></li>
+                    <li><button onClick={() => navigate('/all-orders')}>All Orders</button></li>
+                    <li><button onClick={() => navigate('/order-details')}>Order Details</button></li>
                     <li><button onClick={logout}>Logout</button></li>
                 </ul>
             </div>
